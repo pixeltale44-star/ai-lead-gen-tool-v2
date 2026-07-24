@@ -1,89 +1,88 @@
 import streamlit as st
 import pandas as pd
-import json
 import requests
-from ai_lead_gen import AILeadGenTool
 
-# --- STREAMLIT WEB DASHBOARD ---
-st.set_page_config(page_title="AI Lead Gen Expert", page_icon="🚀", layout="wide")
+# --- REAL AI LEAD GEN LOGIC ---
+class AILeadGenTool:
+    def __init__(self, location, niche, api_key=None):
+        self.location = location
+        self.niche = niche
+        self.api_key = api_key
+        self.leads = []
 
-st.markdown("""
-    <style>
-    .main { background-color: var(--color-background-primary); }
-    .stButton>button { width: 100%; border-radius: 8px; height: 3em; background-color: #3E7096; color: white; }
-    .lead-card { padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
+    def scrape_leads(self):
+        if self.api_key and len(self.api_key) > 5:
+            # REAL DATA MODE - Connecting to SerpApi
+            try:
+                params = {
+                    "engine": "google_maps",
+                    "q": f"{self.niche} in {self.location}",
+                    "api_key": self.api_key,
+                    "type": "search"
+                }
+                response = requests.get("https://serpapi.com/search", params=params)
+                data = response.json()
+                results = data.get("local_results", [])
+                
+                if not results and "error" in data:
+                    st.error(f"SerpApi Error: {data['error']}")
+                    return
 
-st.title("🚀 AI Lead Generation & Pitch Expert")
-st.subheader("Generate Website + Hostinger Leads in Seconds")
+                self.leads = []
+                for res in results:
+                    self.leads.append({
+                        "name": res.get("title", "Unknown"),
+                        "rating": res.get("rating", 0),
+                        "reviews": res.get("reviews", 0),
+                        "website": res.get("website"),
+                        "phone": res.get("phone")
+                    })
+            except Exception as e:
+                st.error(f"Connection Error: {str(e)}")
+        else:
+            # DEMO MODE
+            self.leads = [
+                {"name": "Demo: Quick Fix Plumbers", "rating": 4.2, "reviews": 15, "website": None},
+                {"name": "Demo: Slow Site Expert", "rating": 3.5, "reviews": 5, "website": "http://slow.com"}
+            ]
+
+    def analyze_leads(self):
+        return [l for l in self.leads if not l.get("website") or "slow" in str(l.get("website"))]
+
+    def generate_pitch(self, lead, your_name):
+        name = lead["name"]
+        if not lead.get("website"):
+            offer = "I noticed you don't have a website link on Google. I can build you a professional Hostinger site in 48 hours."
+        else:
+            offer = "I noticed your website could be faster. Moving to Hostinger's AI hosting will boost your local ranking."
+        return f"Hi {name} Team,\n\n{offer}\n\nBest, {your_name}"
+
+# --- APP INTERFACE ---
+st.set_page_config(page_title="AI Lead Gen", layout="wide")
+st.title("🚀 Real-Time AI Lead Gen")
 
 with st.sidebar:
-    st.header("⚙️ Configuration")
-    api_key = st.text_input("SerpApi Key (for real data)", type="password", help="Get one for free at serpapi.com")
-    st.info("If no API key is provided, the tool will run in Demo/Mock mode.")
-    
-    st.divider()
-    st.markdown("### Hostinger Pitch Settings")
-    your_name = st.text_input("Your Name/Agency", "AI Web Solutions")
-    hostinger_link = st.text_input("Hostinger Affiliate Link (optional)", "https://hostinger.com/your-id")
+    st.header("Settings")
+    api_key = st.text_input("SerpApi Key", type="password")
+    your_name = st.text_input("Your Agency Name", "AI Solutions")
 
-col1, col2 = st.columns(2)
-with col1:
-    niche = st.text_input("Business Niche", placeholder="e.g. Plumbers, Dentists, Roofers")
-with col2:
-    location = st.text_input("Location", placeholder="e.g. Austin, TX")
+niche = st.text_input("Niche (e.g. Plumbers)")
+location = st.text_input("City (e.g. Austin, TX)")
 
-if st.button("🔍 Find High-Value Leads"):
-    if not niche or not location:
-        st.warning("Please enter both a niche and a location.")
-    else:
-        with st.spinner(f"Searching for {niche} in {location}..."):
-            tool = AILeadGenTool(location=location, niche=niche)
-            
-            if api_key:
-                tool.scrape_leads(mock=True) 
-                st.success("Connected to Live API (Simulation Enabled)")
-            else:
-                tool.scrape_leads(mock=True)
-                st.info("Running in Demo Mode (Mock Data)")
-
+if st.button("🔍 Find Real Leads"):
+    if niche and location:
+        with st.spinner("Searching Google Maps..."):
+            tool = AILeadGenTool(location, niche, api_key)
+            tool.scrape_leads()
             leads = tool.analyze_leads()
-            
-            if not leads:
-                st.write("No 'Missing Website' leads found in this batch. Try a different niche!")
+            if leads:
+                st.success(f"Found {len(leads)} Opportunities!")
+                for i, lead in enumerate(leads):
+                    with st.expander(f"Lead: {lead['name']}"):
+                        st.write(f"Website: {lead.get('website', 'NONE')}")
+                        pitch = tool.generate_pitch(lead, your_name)
+                        st.text_area("Pitch:", pitch, height=150, key=f"p_{i}")
             else:
-                st.session_state['leads'] = leads
-                st.success(f"Found {len(leads)} high-value opportunities!")
-
-if 'leads' in st.session_state:
-    leads = st.session_state['leads']
-    df = pd.DataFrame(leads)
-    
-    st.divider()
-    st.markdown("### 📋 Lead Analysis Table")
-    st.dataframe(df[['name', 'rating', 'reviews', 'category', 'phone']], use_container_width=True)
-
-    st.markdown("### ✉️ Personalized AI Pitches")
-    
-    for i, lead in enumerate(leads):
-        with st.expander(f"Pitch for {lead['name']} ({lead['category']})"):
-            tool = AILeadGenTool(location=location, niche=niche)
-            pitch_text = tool.generate_pitch(lead)
-            pitch_text = pitch_text.replace("[Your Name]", your_name)
-            
-            st.text_area("Copy/Edit Pitch:", pitch_text, height=300, key=f"pitch_{i}")
-            
-            col_a, col_b = st.columns(2)
-            with col_a:
-                st.button("📧 Send via Email (Draft)", on_click=lambda: st.toast("Opening email client..."), key=f"email_{i}")
-            with col_b:
-                if st.button("📹 Record Loom Video Script", key=f"loom_{i}"):
-                    st.code(f"Hi {lead['name']}, I'm looking at your {lead['rating']} star rating. Let me show you how a website on Hostinger will double these reviews...", language="markdown")
-
-st.divider()
-st.markdown("""
-**💡 Conversion Tip:**
-The most effective way to use this is to click the 'Record Loom Video' button. 
-Local business owners are busy—they won't read long emails, but they WILL watch a 1-minute video of you praising their reviews.
-""")
+                st.info("No leads matching criteria found.")
+    else:
+        st.warning("Enter Niche and City.")

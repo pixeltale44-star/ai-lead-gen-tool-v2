@@ -5,7 +5,7 @@ import requests
 # --- 🔑 CUSTOMER DATABASE (YOUR REVENUE CENTER) ---
 # Add your customers here. Format: "AccessKey": "Customer Name/Plan"
 USER_DATABASE = {
-    "admin123": "Master Admin",        # Your personal key
+    "memuna123": "Master Admin",        # Your personal key
     "user_alex_pro": "Alex - Pro Plan", # Customer 1
     "user_sarah_basic": "Sarah - Basic", # Customer 2
 }

@@ -2,88 +2,143 @@ import streamlit as st
 import pandas as pd
 import requests
 import time
+import urllib.parse
 
-# 1. PAGE CONFIG
-st.set_page_config(page_title="AI SALES WAR-ROOM PRO", page_icon="💎", layout="wide")
+# 1. ENTERPRISE CONFIG (TAB TITLE & ICON)
+st.set_page_config(page_title="WebDev Intelligence Pro", page_icon="🚀", layout="wide")
 
-# --- 🔑 THE CUSTOMER REGISTRY (YOUR DATABASE) ---
-# Format: "UNIQUE_KEY": "CUSTOMER_NAME"
-# You can add 100s of users here!
-USER_DATABASE = {
-    "ahmad123": "Ahmad - CEO",             # Your Admin Key
-    "VIP_777": "Exclusive Member",         # Another Admin Key
-    "JON_DOE_99": "John Doe - Pro Plan",   # Customer 1
-    "SARAH_M_2026": "Sarah Miller - Basic",# Customer 2
-    "USER_PRO_88": "Active Subscriber"     # Customer 3
-}
-
-# --- CONFIGURATION ---
-REAL_API_KEY = st.secrets["SERPAPI_KEY"]
-HOSTINGER_AFFILIATE = "https://www.hostinger.com/in?REFERRALCODE=QWKAAMIRHS43"
-
-# --- STEALTH UI ---
-st.markdown('<style>#MainMenu, footer, header {visibility: hidden;}</style>', unsafe_allow_html=True)
+# --- 2. ELITE UI THEME (Vibrant Background + Dark Prospect Cards) ---
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); background-attachment: fixed; }
-    div[data-testid="stExpander"] { background: #1a202c !important; border: 2px solid #2b6cb0 !important; border-radius: 12px !important; color: white !important; }
-    .stButton>button { background: #2b6cb0; color: white; border-radius: 8px; font-weight: 600; width: 100%; border: none; }
+    /* Total Stealth Mode */
+    #MainMenu, footer, header {visibility: hidden;}
+    
+    /* Vibrant Professional Background */
+    .stApp { 
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); 
+        background-attachment: fixed; 
+    }
+    
+    /* Deep Charcoal Prospect Cards (High Visibility) */
+    div[data-testid="stExpander"] {
+        background: #1e293b !important;
+        border: 2px solid #334155 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Force Light Text inside Dark Cards */
+    div[data-testid="stExpander"] * {
+        color: #f8fafc !important;
+    }
+    
+    /* Professional Header & Labels */
+    h1, h2, h3 { color: #0f172a !important; font-weight: 700; }
+    p, label { color: #334155 !important; font-weight: 600; }
+
+    /* Premium Action Buttons */
+    .stButton>button {
+        background: #2563eb;
+        color: white !important;
+        border-radius: 8px;
+        font-weight: 700;
+        border: none;
+        height: 50px;
+        transition: 0.3s;
+    }
+    .stButton>button:hover { background: #1d4ed8; transform: scale(1.02); }
+    
+    /* AI Report Style */
+    .report-box { background: #334155; padding: 15px; border-radius: 8px; border-left: 5px solid #2563eb; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- LOGIN SYSTEM ---
-if "authenticated" not in st.session_state: st.session_state["authenticated"] = False
+# --- 3. THE REVENUE DATABASE ---
+USER_DATABASE = {
+    "ahmad123": "Ahmad - Global Director",
+    "pro_user_2026": "Enterprise Partner",
+    "MEMUNA_VIP": "Master Admin"
+}
 
-if not st.session_state["authenticated"]:
-    st.markdown("<h1 style='text-align:center;'>💎 AI SALES WAR-ROOM</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;'>Elite Lead Acquisition Engine</p>", unsafe_allow_html=True)
-    # .strip() handles accidental spaces, .upper() makes keys case-insensitive
-    key = st.text_input("Enter License Key", type="password").strip()
-    if st.button("Access Dashboard"):
+# --- 4. ENGINE KEYS & LINKS ---
+API_KEY = "b940832ef990aa072bc43da75530e0ef4aa2d8a12e53b0103e37b022154872bc"
+HOSTINGER_LINK = "https://www.hostinger.com/in?REFERRALCODE=QWKAAMIRHS43"
+
+if "auth" not in st.session_state: st.session_state["auth"] = False
+
+if not st.session_state["auth"]:
+    st.markdown("<div style='text-align:center; padding-top:80px;'>", unsafe_allow_html=True)
+    st.markdown("<h1>🚀 WebDev Intelligence Pro</h1>", unsafe_allow_html=True)
+    st.markdown("<p>Exclusive Access for High-Ticket Web Development Partners</p>", unsafe_allow_html=True)
+    key = st.text_input("License Key", type="password", placeholder="Enter your key...").strip()
+    if st.button("Unlock Prospect Database"):
         if key in USER_DATABASE:
-            st.session_state["authenticated"] = True
-            st.session_state["user_info"] = USER_DATABASE[key]
+            st.session_state["auth"] = True
+            st.session_state["user"] = USER_DATABASE[key]
             st.rerun()
-        else: st.error("Invalid or Expired License Key.")
+        else: st.error("Access Key Invalid.")
+    st.markdown("</div>", unsafe_allow_html=True)
 else:
-    # --- THE COMMANDER DASHBOARD ---
-    st.title(f"🎖️ Welcome back, {st.session_state['user_info']}")
-    
+    # --- 5. THE PROSPECTOR DASHBOARD ---
     with st.sidebar:
-        st.markdown("### ⚙️ SYSTEM")
-        lead_limit = st.slider("Target Depth", 20, 100, 40, step=20)
-        st.divider()
-        my_name = st.text_input("Your Agent Name", "Senior Partner")
-        if st.sidebar.button("Logout"):
-            st.session_state["authenticated"] = False
+        st.markdown(f"### 🛡️ Welcome, {st.session_state['user']}")
+        st.success("Connection: SECURE")
+        my_agency = st.text_input("Agency Identity", "Senior Web Partner")
+        limit = st.select_slider("Lead Batch Size", options=[20, 40, 60, 100], value=20)
+        if st.button("Logout"):
+            st.session_state["auth"] = False
             st.rerun()
 
+    st.markdown("## 🎯 New Prospect Acquisition")
     c1, c2 = st.columns(2)
-    with c1: niche = st.text_input("Target Niche", placeholder="e.g. Lawyers")
-    with c2: location = st.text_input("Target City", placeholder="e.g. London")
+    with c1: niche = st.text_input("Industry (e.g. Lawyers, Roofers)", placeholder="Enter niche...")
+    with c2: city = st.text_input("City (e.g. New York, London)", placeholder="Enter location...")
 
-    if st.button("🚀 EXECUTE SEARCH"):
-        if niche and location:
-            all_leads = []
-            progress = st.progress(0)
-            for offset in range(0, lead_limit, 20):
-                params = {"engine": "google_maps", "q": f"{niche} in {location}", "api_key": REAL_API_KEY, "start": offset}
-                page = requests.get("https://serpapi.com/search", params=params).json().get("local_results", [])
-                if not page: break
-                all_leads.extend(page)
-                progress.progress(min((offset + 20) / lead_limit, 1.0))
+    if st.button("🚀 INITIATE GLOBAL LEAD SCAN"):
+        if niche and city:
+            leads = []
+            with st.spinner("Accessing Real-Time Maps Data..."):
+                for start in range(0, limit, 20):
+                    params = {"engine": "google_maps", "q": f"{niche} in {city}", "api_key": API_KEY, "start": start}
+                    data = requests.get("https://serpapi.com/search", params=params).json().get("local_results", [])
+                    if not data: break
+                    leads.extend(data)
             
-            st.success(f"Success. {len(all_leads)} Targets Found.")
-            for i, lead in enumerate(all_leads):
-                name, site = lead.get("title"), lead.get("website")
-                with st.expander(f"OPPORTUNITY: {name}"):
-                    cl, cr = st.columns([1, 1.2])
-                    with cl:
-                        st.subheader("AI Pitch")
-                        if not site: msg = f"Hi {name}, I noticed you're missing a site. Build one on Hostinger here: {HOSTINGER_AFFILIATE}"
-                        else: msg = f"Hi {name}, your site needs a speed boost on Hostinger here: {HOSTINGER_AFFILIATE}"
-                        st.text_area("Ready-to-use Script:", msg, height=150, key=f"p_{i}")
-                    with cr:
-                        st.subheader("Visual Preview")
-                        if site: st.components.v1.iframe(site, height=350)
-                        else: st.error("SITE MISSING - High Value Lead!")
+            st.success(f"Scanning Complete. {len(leads)} Prospects Identified.")
+            
+            for i, lead in enumerate(leads):
+                name, site, phone = lead.get("title"), lead.get("website"), lead.get("phone", "N/A")
+                rating = lead.get("rating", 0)
+                
+                # DARK PROSPECT CARD
+                with st.expander(f"{'⚠️ SITE MISSING' if not site else '🌐 SITE DETECTED'} | {name}"):
+                    l_col, r_col = st.columns([1, 1.2])
+                    
+                    with l_col:
+                        st.markdown("### 🧠 Prospect Intelligence")
+                        if not site:
+                            status_label = "🔥 HIGH VALUE: Business is invisible online."
+                            pitch = f"Hi {name} Team,\n\nI was researching {niche} in {city} and noticed your business has a {rating}-star rating but no active website link. This is a massive 'hidden' loss for your brand. I can build you an elite, AI-powered site on Hostinger in 48 hours.\n\nRegister your hosting here to start: {HOSTINGER_LINK}\n\nBest, {my_agency}"
+                        else:
+                            status_label = "💡 OPPORTUNITY: Site lacks speed optimization."
+                            pitch = f"Hi {name} Team,\n\nI checked your site at {site}. Your {rating}-star reputation deserves a faster engine. Moving to Hostinger's AI hosting will boost your Google rank instantly.\n\nStart here: {HOSTINGER_LINK}\n\nBest, {my_agency}"
+                        
+                        st.markdown(f"<div class='report-box'>{status_label}</div>", unsafe_allow_html=True)
+                        st.text_area("Live AI Pitch Script", pitch, height=180, key=f"pitch_{i}")
+                        
+                        # DRAFT EMAIL BUTTON
+                        subject = urllib.parse.quote(f"Boosting {name}'s Revenue")
+                        body = urllib.parse.quote(pitch)
+                        mailto = f"mailto:?subject={subject}&body={body}"
+                        st.markdown(f'<a href="{mailto}" target="_blank" style="text-decoration:none;"><div style="background:#2563eb; color:white; padding:12px; border-radius:8px; text-align:center; font-weight:700;">📧 Reach Out to Lead</div></a>', unsafe_allow_html=True)
+                        st.write(f"📞 Contact: {phone}")
+
+                    with r_col:
+                        st.markdown("### 👁️ Live Preview")
+                        if site:
+                            st.components.v1.iframe(site, height=450, scrolling=True)
+                        else:
+                            st.markdown(f'<div style="height:450px; display:flex; align-items:center; justify-content:center; background:#0f172a; border:2px dashed #334155; border-radius:12px; text-align:center; padding:20px; color:white;"><div><h2 style="color:#64748b;">🚫 NO FOOTPRINT</h2><p style="color:#64748b;">This prospect has no active website.<br>Click the email button to close the deal.</p></div></div>', unsafe_allow_html=True)
+        else:
+            st.warning("Please provide both Niche and City.")
